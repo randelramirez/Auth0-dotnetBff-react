@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Authentication;
 using System.Threading.Tasks;
 using System.Net.Http;
@@ -35,9 +36,11 @@ namespace BackendForFrontend.Controllers
         }
 
         [HttpGet]
-        public async Task Get()
+        public async Task<IActionResult> Get()
         {
             var accessToken = await HttpContext.GetTokenAsync("Auth0", "access_token");
+            
+            
 
             var httpClient = _httpClientFactory.CreateClient();
 
@@ -46,11 +49,17 @@ namespace BackendForFrontend.Controllers
 
             var response = await httpClient.SendAsync(request);
 
-            response.EnsureSuccessStatusCode();
-
-            await response.Content.CopyToAsync(HttpContext.Response.Body);
-
+            // TODO: refactor error handling later
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return Unauthorized();
+            }
             
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return Content(content);
+            }
         }
     }
 }

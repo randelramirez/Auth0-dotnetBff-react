@@ -39,7 +39,8 @@ namespace Api
                            ValidateAudience = true,
                            ValidAudiences = Configuration["Auth0:Audience"].Split(";"),
                            ValidateIssuer = true,
-                           ValidIssuer = $"https://{Configuration["Auth0:Domain"]}"
+                           ValidIssuer = $"https://{Configuration["Auth0:Domain"]}",
+                           ClockSkew = TimeSpan.Zero
                        };
                    });
 
