@@ -7,4 +7,4 @@ The following article describes the implementation details: [Backend For Fronten
 2.) Fix dependency issues on ClientApp ✅ <br>
 3.) Include startup of ClientApp development server on BFF start up (run/debug) ✅ <br>
 4.) Implement Refresh Token <br>
-5.) Migrate ClientApp from CRA to Vite <br>
+5.) Migrate ClientApp from CRA to Vite (React/TypeScript) <br>
