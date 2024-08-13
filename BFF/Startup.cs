@@ -110,8 +110,8 @@ namespace BackendForFrontend
             // Configure the scope
             options.Scope.Clear();
             options.Scope.Add("openid");
-            options.Scope.Add("offline_access");
-            options.Scope.Add("read:weather");
+            options.Scope.Add("offline_access"); // For requesting refresh token
+            options.Scope.Add("read:weather"); // permission for the weather api(inside the API Project)
             
             // Set the callback path, so Auth0 will call back to http://localhost:3000/callback
             // Also ensure that you have added the URL as an Allowed Callback URL in your Auth0 dashboard
@@ -120,8 +120,11 @@ namespace BackendForFrontend
             // Configure the Claims Issuer to be Auth0
             options.ClaimsIssuer = "Auth0";
 
+            /*
+                The SaveTokens option tells the OpenID Connect middleware that all the tokens (id token, refresh token, and access token) 
+                received from the authorization endpoint during the initial handshake must be persisted for later use
+            */
             options.SaveTokens = true;
-
             
             options.Events = new OpenIdConnectEvents
             {
@@ -147,6 +150,10 @@ namespace BackendForFrontend
                     return Task.CompletedTask;
                 },
                 OnRedirectToIdentityProvider = context => {
+                    /*
+                        The OpenID Connect middleware does not have any property to configure the audience parameter that Auth0 requires for returning an authorization code for an API. 
+                        We are attaching some code to the OnRedirectToIdentityProvider event for setting that parameter before the user is redirected to Auth0 for authentication. 
+                    */
                     context.ProtocolMessage.SetParameter("audience", Configuration["Auth0:ApiAudience"]);
                     return Task.CompletedTask;
                 }
