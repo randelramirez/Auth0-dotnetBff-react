@@ -11,6 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpLogging;
 
 namespace BackendForFrontend
 {
@@ -26,35 +27,37 @@ namespace BackendForFrontend
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpLogging(o =>
+            {
+                o.CombineLogs = true;
+                o.LoggingFields = HttpLoggingFields.All;
+            });
             services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            })
-            .AddCookie(o =>
-            {
-                o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                o.Cookie.SameSite = SameSiteMode.Strict;
-                o.Cookie.HttpOnly = true;
-            })
-            .AddOpenIdConnect("Auth0", options => ConfigureOpenIdConnect(options));
+                {
+                    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                })
+                .AddCookie(o =>
+                {
+                    o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    o.Cookie.SameSite = SameSiteMode.Strict;
+                    o.Cookie.HttpOnly = true;
+                })
+                .AddOpenIdConnect("Auth0", options => ConfigureOpenIdConnect(options));
 
             services.AddControllersWithViews();
 
             services.AddHttpClient();
 
             // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/build";
-            });
+            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            
+            app.UseHttpLogging();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -112,7 +115,7 @@ namespace BackendForFrontend
             options.Scope.Add("openid");
             options.Scope.Add("offline_access"); // For requesting refresh token
             options.Scope.Add("read:weather"); // permission for the weather api(inside the API Project)
-            
+
             // Set the callback path, so Auth0 will call back to http://localhost:3000/callback
             // Also ensure that you have added the URL as an Allowed Callback URL in your Auth0 dashboard
             options.CallbackPath = new PathString("/callback");
@@ -121,17 +124,18 @@ namespace BackendForFrontend
             options.ClaimsIssuer = "Auth0";
 
             /*
-                The SaveTokens option tells the OpenID Connect middleware that all the tokens (id token, refresh token, and access token) 
+                The SaveTokens option tells the OpenID Connect middleware that all the tokens (id token, refresh token, and access token)
                 received from the authorization endpoint during the initial handshake must be persisted for later use
             */
             options.SaveTokens = true;
-            
+
             options.Events = new OpenIdConnectEvents
             {
                 // handle the logout redirection
                 OnRedirectToIdentityProviderForSignOut = (context) =>
                 {
-                    var logoutUri = $"https://{Configuration["Auth0:Domain"]}/v2/logout?client_id={Configuration["Auth0:ClientId"]}";
+                    var logoutUri =
+                        $"https://{Configuration["Auth0:Domain"]}/v2/logout?client_id={Configuration["Auth0:ClientId"]}";
 
                     var postLogoutUri = context.Properties.RedirectUri;
                     if (!string.IsNullOrEmpty(postLogoutUri))
@@ -142,17 +146,20 @@ namespace BackendForFrontend
                             var request = context.Request;
                             postLogoutUri = request.Scheme + "://" + request.Host + request.PathBase + postLogoutUri;
                         }
-                        logoutUri += $"&returnTo={ Uri.EscapeDataString(postLogoutUri)}";
+
+                        logoutUri += $"&returnTo={Uri.EscapeDataString(postLogoutUri)}";
                     }
+
                     context.Response.Redirect(logoutUri);
                     context.HandleResponse();
 
                     return Task.CompletedTask;
                 },
-                OnRedirectToIdentityProvider = context => {
+                OnRedirectToIdentityProvider = context =>
+                {
                     /*
-                        The OpenID Connect middleware does not have any property to configure the audience parameter that Auth0 requires for returning an authorization code for an API. 
-                        We are attaching some code to the OnRedirectToIdentityProvider event for setting that parameter before the user is redirected to Auth0 for authentication. 
+                        The OpenID Connect middleware does not have any property to configure the audience parameter that Auth0 requires for returning an authorization code for an API.
+                        We are attaching some code to the OnRedirectToIdentityProvider event for setting that parameter before the user is redirected to Auth0 for authentication.
                     */
                     context.ProtocolMessage.SetParameter("audience", Configuration["Auth0:ApiAudience"]);
                     return Task.CompletedTask;
