@@ -116,7 +116,7 @@ namespace BackendForFrontend
             options.Scope.Add("offline_access"); // For requesting refresh token
             options.Scope.Add("read:weather"); // permission for the weather api(inside the API Project)
 
-            // Set the callback path, so Auth0 will call back to http://localhost:3000/callback
+            // Set the callback path, so Auth0 will call back to http://localhost:5001/callback
             // Also ensure that you have added the URL as an Allowed Callback URL in your Auth0 dashboard
             options.CallbackPath = new PathString("/callback");
 

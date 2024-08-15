@@ -13,6 +13,7 @@ const App = () => {
 
   return (
     <Layout>
+      <Route path="*" element={(<><p>Not Found</p></>)} />
       <Route exact path="/" component={Home} />
       <Route
         path="/fetch-data"
