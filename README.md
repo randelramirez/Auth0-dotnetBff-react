@@ -2,10 +2,11 @@ This repository contains a React SPA supported by an ASP.NET Core backend to imp
 
 The following article describes the implementation details: [Backend For Frontend Authentication Pattern with Auth0 and ASP.NET Core](https://auth0.com/blog/backend-for-frontend-pattern-with-auth0-and-dotnet/)
 
-## TO DO:
+## 📋  TO DO:
 1.) Update to .NET 6 ✅ <br>
 2.) Fix dependency issues on ClientApp ✅ <br>
 3.) Include startup of ClientApp development server on BFF start up (run/debug) ✅ <br>
 4.) Implement Refresh Token ✅ <br> 
-5.) Migrate ClientApp from CRA to Vite (React/TypeScript) <br>
+5.) Migrate ClientApp from CRA to Vite (React/TypeScript) ✅ <br>
 6.) Create separate branch /or change controllers to minimal api (endpoints) <br>
+7.) Create a version where the client app is hosted with ASP.NET Core(UseProxyToSpaDevelopmentServer) <br>
