@@ -10,3 +10,22 @@ The following article describes the implementation details: [Backend For Fronten
 5.) Migrate ClientApp from CRA to Vite (React/TypeScript) ✅ <br>
 6.) Create separate branch /or change controllers to minimal api (endpoints) <br>
 7.) Create a version where the client app is hosted with ASP.NET Core(UseProxyToSpaDevelopmentServer) <br>
+
+
+[Spa Proxy](https://www.infoq.com/articles/dotnet-spa-templates-proxy/)
+
+![alt text](image-1.png)
+
+This approach meant that the launch code needed to be specific for each front-end framework, resulting in hard-to-maintain code for each front-end framework that the Microsoft team wanted to support. <br>
+
+
+![alt text](image-2.png)
+
+From .NET 6, the new templates for Angular and React switch how the front end and back end communicate. They use the front end’s proxy solutions to send the request to the back end. The popular front-end frameworks already have built-in support for development server proxying, but they must also be configured each specific to the used framework. The ASP.NET app still launches the front-end development server, but the request comes from that server.
+
+Advantages of this new approach include:
+
+    Simpler configuration in the back-end files
+    The back end is more independent from the front-end framework but not completely separate as the launch command and URL are still specific
+    No more framework-specific code in the back end’s Startup.cs or Program.cs files
+    Extensible to other front-end frameworks not included in the templates
