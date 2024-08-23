@@ -9,7 +9,8 @@ The following article describes the implementation details: [Backend For Fronten
 4.) Implement Refresh Token ✅ <br> 
 5.) Migrate ClientApp from CRA to Vite (React/TypeScript) ✅ <br>
 6.) Create separate branch /or change controllers to minimal api (endpoints) <br>
-7.) Create a version where the client app is hosted with ASP.NET Core(UseProxyToSpaDevelopmentServer) <br>
+7.) Create a version where the client app and ASP.NET Core(UseProxyToSpaDevelopmentServer) are using the same port ✅<br>
+7.) Create a version where the client app is hosted on Razor page<br>
 
 
 [Spa Proxy](https://www.infoq.com/articles/dotnet-spa-templates-proxy/)
