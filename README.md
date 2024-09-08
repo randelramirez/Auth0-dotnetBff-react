@@ -33,4 +33,4 @@ Advantages of this new approach include:
 
 
 ViteProxy = uses front end proxy <br>
-UseProxyToSpaDevelopment = front end is serve in the same port as ASP.NET Core <br>
+SpaProxy = front end is serve in the same port as ASP.NET Core <br>
