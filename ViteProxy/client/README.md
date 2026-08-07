@@ -1,50 +1,72 @@
-# React + TypeScript + Vite
+# ViteProxy React client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The SPA for the ViteProxy variant. See the [root README](../../README.md) for
+the Auth0 setup and how the three projects fit together.
 
-Currently, two official plugins are available:
+React 18 · TypeScript 5.5 · Vite 5 · React Router 6 · reactstrap + Bootstrap 5
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Running it
 
-## Expanding the ESLint configuration
+In this variant **the BFF starts Vite for you**. `Bff.csproj` sets `SpaRoot`,
+`SpaProxyLaunchCommand`, and `SpaProxyServerUrl`, and the launch profiles load
+the `Microsoft.AspNetCore.SpaProxy` hosting startup assembly:
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```powershell
+dotnet run --project ..\Server\Bff\Bff.csproj --launch-profile https
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Then browse **https://localhost:5173**.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+To run Vite on its own, set the proxy target first — the fallback in
+`vite.config.ts` is `https://localhost:7203`, which is **not** this variant's
+BFF port (7119):
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```powershell
+npm install
+$env:ASPNETCORE_HTTPS_PORT = "7119"
+npm run dev
 ```
+
+`ASPNETCORE_URLS` works too; its first `;`-separated entry is used.
+
+## Scripts
+
+- `npm run dev` — Vite dev server on HTTPS port 5173
+- `npm run build` — `tsc -b` then `vite build`
+- `npm run lint` — ESLint
+- `npm run preview` — serve the production build
+
+## Proxy and TLS
+
+`^/api` and `^/auth` are forwarded to the BFF with `secure: false`, so the BFF's
+self-signed development certificate is accepted.
+
+On startup the config exports an ASP.NET development certificate named `client`
+into `%APPDATA%/ASP.NET/https` (or `~/.aspnet/https`) via `dotnet dev-certs`,
+and serves the dev server over HTTPS with it. Vite throws if that export fails,
+so the .NET SDK must be installed.
+
+`@` resolves to `./src`.
+
+## Structure
+
+```
+src/
+  App.tsx                  BrowserRouter and the route table
+  context/AuthContext.tsx  Calls /auth/GetUser on mount; holds auth state
+  context/useAuth.ts       Consumer hook
+  pages/
+    Layout.tsx             NavMenu + content container
+    NavMenu.tsx            Swaps Login/Logout on auth state
+    Home.tsx
+    About.tsx
+    FetchData.tsx          Weather table from /api/WeatherForecast
+    User.tsx               Claims from /auth/GetUser
+    NotFound.tsx
+```
+
+`/fetch-data` and `/user` are guarded inline in `App.tsx`: when not
+authenticated they render a component that calls `login()` and returns `null`.
+`login()` and `logout()` are full-page navigations to `/auth/login` and
+`/auth/logout` — they have to leave the SPA so the browser can follow the
+redirect chain out to Auth0 and back.
